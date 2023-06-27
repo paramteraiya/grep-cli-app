@@ -1,0 +1,10 @@
+This is a sample file.
+It contains multiple lines.
+This is the first line.
+This is the second line.
+This line has the search string.
+The search string is repeated here.
+Another line with the search string.
+This line does not match the search string.
+The end of the file.
+THIS IS SECOND TEST LINE for case-insensitive.
