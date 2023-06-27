@@ -63,6 +63,22 @@ docker build -t grep-cli-app .
 ```bash
 docker run --rm -v "$(pwd)/test.txt:/app/test.txt" grep-cli-app test.txt [arguments]
 ```
+
+## Creating a Standalone Executable with PyInstaller
+If you prefer to create a standalone executable that can be run on different operating systems without Python installed, you can use PyInstaller. Follow these steps to create an executable:
+
+1. Install PyInstaller using the following command:
+```bash
+pip install pyinstaller
+```
+2. In the terminal, navigate to the project directory that contains main.py.
+```bash
+pyinstaller main.py --onefile --name my_grep
+```
+##### This command will generate a standalone executable named my_grep in a dist directory.
+
+The executable file will be specific to the operating system on which it was built. You'll need to repeat the build process on each target operating system to generate executables for all platforms.
+
 ## License
 This project is licensed under the MIT License.
 Feel free to customize the sections, commands, and examples according to your needs. 
