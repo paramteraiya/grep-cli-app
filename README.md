@@ -79,6 +79,11 @@ pyinstaller main.py --onefile --name my_grep
 
 The executable file will be specific to the operating system on which it was built. You'll need to repeat the build process on each target operating system to generate executables for all platforms.
 
+### Run the test cases by executing the test_main.py file:
+```bash
+python test_main.py
+```
+
 ## License
 This project is licensed under the MIT License.
 Feel free to customize the sections, commands, and examples according to your needs. 

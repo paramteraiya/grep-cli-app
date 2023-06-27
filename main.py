@@ -58,16 +58,19 @@ def search_files_recursive(directory: str, search_pattern: str, case_insensitive
         for file in files:
             filepath = os.path.join(root, file)
             if os.path.isfile(filepath):
-                with open(filepath, 'r') as file_content:
-                    result = search_pattern_in_strings(search_pattern, file_content.readlines(), case_insensitive,
-                                                       lines_before, lines_after)
-                    if result:
-                        if count_only:
-                            print(f"{filepath}: {len(result)}")
-                        else:
-                            if lines_before:
-                                print(f"{filepath}: {''.join(result[:lines_before])}")
-                            print(f"{filepath}: {''.join(result[lines_after:])}")
+                try:
+                    with open(filepath, 'r') as file_content:
+                        result = search_pattern_in_strings(search_pattern, file_content.readlines(), case_insensitive,
+                                                           lines_before, lines_after)
+                        if result:
+                            if count_only:
+                                print(f"{filepath}: {len(result)}")
+                            else:
+                                if lines_before:
+                                    print(f"{filepath}: {''.join(result[:lines_before])}")
+                                print(f"{filepath}: {''.join(result[lines_after:])}")
+                except UnicodeDecodeError as e:
+                    print(f"Error reading file '{filepath}': {e}")
 
 
 def my_grep(search_pattern: str, filename: str = None, output_file_path: str = None, case_insensitive: bool = False

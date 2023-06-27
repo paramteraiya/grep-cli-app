@@ -2,7 +2,6 @@ import os.path
 import unittest
 import subprocess
 import shutil
-# TODO: Add the file encoding testcase
 
 
 def create_dir_for_recursive_test(directory_name):
@@ -60,6 +59,26 @@ class GrepTestCases(unittest.TestCase):
 
         subprocess.run(['chmod', '+r', os.path.join(os.getcwd(), filename)])
         subprocess.run(['rm', os.path.join(os.getcwd(), filename)])
+
+    # TODO: Need to handle this!
+    # def test_different_file_encoding(self):
+    #     # Create a test file with a specific encoding
+    #     filename = "encoded_file.txt"
+    #     encoding = "utf-16"  # Replace with the desired file encoding
+    #     content = "This is a test file with different encoding."
+    #
+    #     with open(filename, 'w', encoding=encoding) as file:
+    #         file.write(content)
+    #
+    #     # Run the command to search for a string in the file
+    #     result = subprocess.run(['python', 'main.py', 'test', filename], capture_output=True, text=True)
+    #
+    #     # Check the expected output based on the file encoding and content
+    #     expected_output = "This is a test file with different encoding.\nI found 'test' in the file.\n"
+    #     self.assertEqual(result.stdout, expected_output)
+    #
+    #     # Clean up the test file
+    #     os.remove(filename)
 
     def test_output_file_write(self):
         output_filename = "output.txt"
@@ -178,9 +197,17 @@ class GrepTestCases(unittest.TestCase):
                           'test_recursive_search/subdir/file3.txt: 1\n'
         self.assertEqual(result.stdout, expected_output)
 
+    def test_lines_before_after_recursive(self):
+        result = subprocess.run(['python', 'main.py', 'test', 'test_recursive_search', '-r', '-A', '1', '-B', '1'],
+                                capture_output=True, text=True)
+        expected_output = 'test_recursive_search/file1.txt: This is a test file.\n' \
+                          'test_recursive_search/file1.txt: \n' \
+                          'test_recursive_search/subdir/file2.txt: One can test a program by running test cases.\n' \
+                          'test_recursive_search/subdir/file2.txt: \n' \
+                          'test_recursive_search/subdir/file3.txt: This file contains a test line.\n' \
+                          'test_recursive_search/subdir/file3.txt: \n'
+        self.assertEqual(result.stdout, expected_output)
+
 
 if __name__ == '__main__':
     unittest.main()
-
-
-
