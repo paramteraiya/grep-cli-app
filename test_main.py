@@ -244,4 +244,4 @@ class GrepTestCases(unittest.TestCase):
 
 if __name__ == '__main__':
     remove_temp_files()
-    # unittest.main()
+    unittest.main()
