@@ -18,7 +18,7 @@ def search_pattern_in_strings(search_pattern: str, array_of_strings: list, case_
     :return: list of matching lines
     """
     if not array_of_strings:
-        return []
+        return "", []
 
     # list to store the matching lines
     matches = []
@@ -36,34 +36,34 @@ def search_pattern_in_strings(search_pattern: str, array_of_strings: list, case_
 
             # add lines after the match
             end = min(i + lines_after + 1, len(array_of_strings))
-            matches.extend(array_of_strings[i+1:end])
+            matches.extend(array_of_strings[i + 1:end])
     matches = [s.strip("\n") for s in matches]
-    return matches
+    return "", matches
 
 
 def search_files_recursive(directory: str, search_pattern: str, case_insensitive: bool = False,
-                           count_only: bool = False, lines_before: int = 0, lines_after: int = 0) -> None:
+                           count_only: bool = False, lines_before: int = 0, lines_after: int = 0) -> tuple:
     """
-    Recursively search files in a directory for a pattern and print the matched lines along with its file name.
+    Recursively search files in a directory for a pattern and return the matched lines along with its file name.
 
     :param directory: directory to search in
     :param search_pattern: pattern to search for
     :param case_insensitive: flag for case-insensitive search (default value is False, search for case-sensitive)
-    :param count_only: flag to only print the count of matching (default is False)
+    :param count_only: flag to only return the count of matching (default is False)
     :param lines_before: number of lines to include before a match (default is 0)
     :param lines_after: number of lines to include after a match (default is 0)
-    :return: list of matching lines
+    :return: tuple containing the error message (if any) and the list of matching lines
     """
     if not os.path.isdir(directory):
-        print(f"Directory '{directory}' not found.")
-        return
+        return f"Directory '{directory}' not found.", []
 
     files_found = False  # Flag to check if any files are found in the directory or its subdirectories
+
+    matches = []
 
     for root, dirs, files in os.walk(directory):
         if not files and not dirs:
             # Directory is empty
-            print(f"Directory '{root}' is empty.")
             continue
         for file in files:
             filepath = os.path.join(root, file)
@@ -73,24 +73,25 @@ def search_files_recursive(directory: str, search_pattern: str, case_insensitive
                     with open(filepath, 'r') as file_content:
                         result = search_pattern_in_strings(search_pattern, file_content.readlines(), case_insensitive,
                                                            lines_before, lines_after)
-                        if result:
+                        if result[1]:
                             if count_only:
-                                print(f"{filepath}: {len(result)}")
+                                matches.append(f"{filepath}: {len(result[1])}")
                             else:
                                 if lines_before:
-                                    print(f"{filepath}: {''.join(result[:lines_before])}")
-                                print(f"{filepath}: {''.join(result[lines_after:])}")
+                                    matches.append(f"{filepath}: {''.join(result[1][:lines_before])}")
+                                matches.append(f"{filepath}: {''.join(result[1][lines_after:])}")
                 except UnicodeDecodeError as e:
-                    print(f"Error reading file '{filepath}': {e}")
-        if not files_found:
-            print(f"No files found in directory '{directory}'.")
+                    return f"Error reading file '{filepath}': {e}", []
+    if not files_found:
+        return f"No files found in directory '{directory}'.", []
+    return "", matches
 
 
-def my_grep(search_pattern: str, filename: str = None, output_file_path: str = None, case_insensitive: bool = False
-            , count_only: bool = False, lines_before: int = 0, lines_after: int = 0,
-            recursive: bool = False) -> None:
+def my_grep(search_pattern: str, filename: str = None, output_file_path: str = None, case_insensitive: bool = False,
+            count_only: bool = False, lines_before: int = 0, lines_after: int = 0,
+            recursive: bool = False) -> tuple:
     """
-    Search provided string/pattern in file/STDIN/directory and print the matches
+    Search provided string/pattern in file/STDIN/directory and return the matches
 
     :param case_insensitive:
     :param output_file_path:
@@ -100,31 +101,28 @@ def my_grep(search_pattern: str, filename: str = None, output_file_path: str = N
     :param count_only:
     :param lines_before:
     :param lines_after:
-    :return: None
+    :return: tuple containing the error message (if any) and the list of matching lines
     """
     # search_string = re.compile(search_string)
     if recursive and filename:
-        search_files_recursive(filename, search_pattern, case_insensitive, count_only, lines_before,
-                               lines_after)
-        return
+        return search_files_recursive(filename, search_pattern, case_insensitive, count_only, lines_before,
+                                      lines_after)
     if filename:
         # filepath is variable which has the value for filename relative path
         filepath = os.path.join(os.getcwd(), filename)
         # checks if the file does not exist
         if not os.path.exists(filepath):
-            print(f"File '{filename}' not found.")
-            return
+            return f"File '{filename}' not found.", []
         # checks weather file has the read access or not
         if not os.access(filepath, os.R_OK):
-            print(f"No read permission for file '{filename}'.")
-            return
+            return f"No read permission for file '{filename}'.", []
         stream = []
         try:
             # open a file and iterate through line by line to check weather the provided string exists in the line or
             # not
             stream = open(filepath, 'r')
         except IsADirectoryError as err:
-            print(f'{err}')
+            return f'{err}', []
     else:
         stream = sys.stdin
     if stream:
@@ -133,29 +131,29 @@ def my_grep(search_pattern: str, filename: str = None, output_file_path: str = N
     else:
         result = []
 
-    # checks if the filename for output has been provided
-    if output_file_path and result:
+    if output_file_path and result[1]:
         if os.path.exists(os.path.join(os.getcwd(), output_file_path)):
-            print(f"Output file '{output_file_path}' already exists.")
-            return
+            return f"Output file '{output_file_path}' already exists.", []
         with open(os.path.join(os.getcwd(), output_file_path), 'w') as output_file_content:
             if count_only:
-                output_file_content.write(str(len(result)) + '\n')
+                output_file_content.write(str(len(result[1])) + '\n')
             else:
-                for line in result:
+                for line in result[1]:
                     output_file_content.write(line + '\n')
-            return
-    if result:
+            return "", result[1]
+
+    if result[1]:
         if count_only:
-            print(len(result))
-            return
+            return "", [len(result[1])]
 
+        output_lines = []
         if lines_before:
-            print("\n".join(result[:lines_before]))
+            output_lines.append("\n".join(result[1][:lines_before]))
 
-        print("\n".join(result[lines_before:]))
-        print(f"I found '{search_pattern}' in the file.")
-        return
+        output_lines.append("\n".join(result[1][lines_before:]))
+        output_lines.append(f"I found '{search_pattern}' in the file.")
+        return "", output_lines
+    return "", []
 
 
 if __name__ == '__main__':
@@ -170,6 +168,12 @@ if __name__ == '__main__':
     parser.add_argument('-r', '--recursive', action='store_true',
                         help='Search recursively in all files in the given directory')
     args = parser.parse_args()
-    my_grep(args.search_string, filename=args.filename, output_file_path=args.output_file,
-            case_insensitive=args.insensitive, count_only=args.count_only, lines_before=args.lines_before_match,
-            lines_after=args.lines_after_match, recursive=args.recursive)
+    error_message, result = my_grep(args.search_string, filename=args.filename, output_file_path=args.output_file,
+                                    case_insensitive=args.insensitive, count_only=args.count_only,
+                                    lines_before=args.lines_before_match,
+                                    lines_after=args.lines_after_match, recursive=args.recursive)
+    if error_message:
+        print(f"{error_message}")
+    else:
+        for line in result:
+            print(line)

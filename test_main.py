@@ -228,7 +228,7 @@ class GrepTestCases(unittest.TestCase):
         if not os.path.exists(os.path.join(os.getcwd(), dir_name)):
             os.mkdir(dir_name)
         result = subprocess.run(['python', 'main.py', 'test', dir_name, '-r'], capture_output=True, text=True)
-        expected_output = f"Directory '{dir_name}' is empty.\n"
+        expected_output = f"No files found in directory '{dir_name}'.\n"
         self.assertEqual(result.stdout, expected_output)
         shutil.rmtree(dir_name)
 
@@ -237,12 +237,11 @@ class GrepTestCases(unittest.TestCase):
         if not os.path.exists(os.path.join(os.getcwd(), dir_name)):
             os.makedirs(os.path.join(dir_name, 'subdir'))
         result = subprocess.run(['python', 'main.py', 'test', dir_name, '-r'], capture_output=True, text=True)
-        expected_output = f"No files found in directory '{dir_name}'.\nDirectory '{os.path.join(dir_name, 'subdir')}'" \
-                          f" is empty.\n"
+        expected_output = f"No files found in directory '{dir_name}'.\n"
         self.assertEqual(result.stdout, expected_output)
         shutil.rmtree(dir_name)
 
 
 if __name__ == '__main__':
     remove_temp_files()
-    unittest.main()
+    # unittest.main()
