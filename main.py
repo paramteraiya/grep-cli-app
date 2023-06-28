@@ -3,6 +3,7 @@ import argparse
 import os
 import re
 import sys
+import codecs
 
 
 def search_pattern_in_strings(search_pattern: str, array_of_strings: list, case_insensitive: bool = False,
@@ -120,9 +121,11 @@ def my_grep(search_pattern: str, filename: str = None, output_file_path: str = N
         try:
             # open a file and iterate through line by line to check weather the provided string exists in the line or
             # not
-            stream = open(filepath, 'r')
+            stream = codecs.open(filepath, 'r', encoding='utf-8')
         except IsADirectoryError as err:
             return f'{err}', []
+        except UnicodeDecodeError as e:
+            return f"Error decoding file '{filepath}' with encoding 'utf-8'", []
     else:
         stream = sys.stdin
     if stream:

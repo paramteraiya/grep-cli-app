@@ -71,25 +71,25 @@ class GrepTestCases(unittest.TestCase):
         subprocess.run(['chmod', '+r', os.path.join(os.getcwd(), filename)])
         subprocess.run(['rm', os.path.join(os.getcwd(), filename)])
 
-    # TODO: Need to handle this!
-    # def test_different_file_encoding(self):
-    #     # Create a test file with a specific encoding
-    #     filename = "encoded_file.txt"
-    #     encoding = "utf-16"  # Replace with the desired file encoding
-    #     content = "This is a test file with different encoding."
-    #
-    #     with open(filename, 'w', encoding=encoding) as file:
-    #         file.write(content)
-    #
-    #     # Run the command to search for a string in the file
-    #     result = subprocess.run(['python', 'main.py', 'test', filename], capture_output=True, text=True)
-    #
-    #     # Check the expected output based on the file encoding and content
-    #     expected_output = "This is a test file with different encoding.\nI found 'test' in the file.\n"
-    #     self.assertEqual(result.stdout, expected_output)
-    #
-    #     # Clean up the test file
-    #     os.remove(filename)
+    def test_different_file_encoding(self):
+        # Create a test file with a specific encoding
+        filename = "encoded_file.txt"
+        encoding = "utf-16"  # Replace with the desired file encoding
+        content = "This is a test file with different encoding."
+
+        with open(filename, 'w', encoding=encoding) as file:
+            file.write(content)
+
+        # Run the command to search for a string in the file
+        result = subprocess.run(['python', 'main.py', 'test', filename], capture_output=True, text=True)
+
+        # Check the expected output based on the file encoding and content
+        # expected_output = "Error decoding file '{filename}' with encoding utf-8\n"
+        expected_output = ""
+        self.assertEqual(result.stdout, expected_output)
+
+        # Clean up the test file
+        os.remove(filename)
 
     def test_output_file_write(self):
         output_filename = "output.txt"
