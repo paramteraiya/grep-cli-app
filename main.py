@@ -54,10 +54,21 @@ def search_files_recursive(directory: str, search_pattern: str, case_insensitive
     :param lines_after: number of lines to include after a match (default is 0)
     :return: list of matching lines
     """
+    if not os.path.isdir(directory):
+        print(f"Directory '{directory}' not found.")
+        return
+
+    files_found = False  # Flag to check if any files are found in the directory or its subdirectories
+
     for root, dirs, files in os.walk(directory):
+        if not files and not dirs:
+            # Directory is empty
+            print(f"Directory '{root}' is empty.")
+            continue
         for file in files:
             filepath = os.path.join(root, file)
             if os.path.isfile(filepath):
+                files_found = True
                 try:
                     with open(filepath, 'r') as file_content:
                         result = search_pattern_in_strings(search_pattern, file_content.readlines(), case_insensitive,
@@ -71,6 +82,8 @@ def search_files_recursive(directory: str, search_pattern: str, case_insensitive
                                 print(f"{filepath}: {''.join(result[lines_after:])}")
                 except UnicodeDecodeError as e:
                     print(f"Error reading file '{filepath}': {e}")
+        if not files_found:
+            print(f"No files found in directory '{directory}'.")
 
 
 def my_grep(search_pattern: str, filename: str = None, output_file_path: str = None, case_insensitive: bool = False
@@ -105,13 +118,20 @@ def my_grep(search_pattern: str, filename: str = None, output_file_path: str = N
         if not os.access(filepath, os.R_OK):
             print(f"No read permission for file '{filename}'.")
             return
-
-        # open a file and iterate through line by line to check weather the provided string exists in the line or not
-        stream = open(filepath, 'r')
+        stream = []
+        try:
+            # open a file and iterate through line by line to check weather the provided string exists in the line or
+            # not
+            stream = open(filepath, 'r')
+        except IsADirectoryError as err:
+            print(f'{err}')
     else:
         stream = sys.stdin
-    result = search_pattern_in_strings(search_pattern, stream.readlines(), case_insensitive, lines_before
-                                       , lines_after)
+    if stream:
+        result = search_pattern_in_strings(search_pattern, stream.readlines(), case_insensitive, lines_before,
+                                           lines_after)
+    else:
+        result = []
 
     # checks if the filename for output has been provided
     if output_file_path and result:

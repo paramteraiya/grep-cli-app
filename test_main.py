@@ -20,6 +20,17 @@ def create_dir_for_recursive_test(directory_name):
         f.write('This file contains a test line.\n')
 
 
+def remove_temp_files():
+    if os.path.exists(os.path.join(os.getcwd(), 'output.txt')):
+        os.remove(os.path.join(os.getcwd(), 'output.txt'))
+    if os.path.exists(os.path.join(os.getcwd(), 'param_test.txt')):
+        os.remove(os.path.join(os.getcwd(), 'param_test.txt'))
+    if os.path.exists(os.path.join(os.getcwd(), 'test_output.txt')):
+        os.remove(os.path.join(os.getcwd(), 'test_output.txt'))
+    if os.path.exists(os.path.join(os.getcwd(), 'test_recursive_search')):
+        shutil.rmtree(os.path.join(os.getcwd(), 'test_recursive_search'))
+
+
 class GrepTestCases(unittest.TestCase):
 
     def test_zero_matches(self):
@@ -131,11 +142,7 @@ class GrepTestCases(unittest.TestCase):
         expected_output = "barbazfoo\nfood\nI found 'foo' in the file.\n"
         self.assertEqual(result.stdout, expected_output)
 
-    def test_grep_stdin1(self):
-
-        # expected_output = "barbazfoo\nfood\nI found 'foo' in the file.\n"
-        # self.assertEqual(result.stdout, expected_output)
-
+    def test_grep_stdin_with_output_file(self):
         output_filename = "param_test.txt"
         expected_content = "barbazfoo\nfood\n"
         result = subprocess.run(
@@ -198,6 +205,8 @@ class GrepTestCases(unittest.TestCase):
         self.assertEqual(result.stdout, expected_output)
 
     def test_lines_before_after_recursive(self):
+        if not os.path.exists('test_recursive_search'):
+            create_dir_for_recursive_test('test_recursive_search')
         result = subprocess.run(['python', 'main.py', 'test', 'test_recursive_search', '-r', '-A', '1', '-B', '1'],
                                 capture_output=True, text=True)
         expected_output = 'test_recursive_search/file1.txt: This is a test file.\n' \
@@ -208,6 +217,32 @@ class GrepTestCases(unittest.TestCase):
                           'test_recursive_search/subdir/file3.txt: \n'
         self.assertEqual(result.stdout, expected_output)
 
+    def test_recursive_search_directory_not_found(self):
+        dir_name = "non_existing_directory"
+        result = subprocess.run(['python', 'main.py', 'test', dir_name, '-r'], capture_output=True, text=True)
+        expected_output = f"Directory '{dir_name}' not found.\n"
+        self.assertEqual(result.stdout, expected_output)
+
+    def test_recursive_search_empty_directory(self):
+        dir_name = "empty_directory"
+        if not os.path.exists(os.path.join(os.getcwd(), dir_name)):
+            os.mkdir(dir_name)
+        result = subprocess.run(['python', 'main.py', 'test', dir_name, '-r'], capture_output=True, text=True)
+        expected_output = f"Directory '{dir_name}' is empty.\n"
+        self.assertEqual(result.stdout, expected_output)
+        shutil.rmtree(dir_name)
+
+    def test_recursive_search_empty_subdirectory(self):
+        dir_name = "empty_sub_directory"
+        if not os.path.exists(os.path.join(os.getcwd(), dir_name)):
+            os.makedirs(os.path.join(dir_name, 'subdir'))
+        result = subprocess.run(['python', 'main.py', 'test', dir_name, '-r'], capture_output=True, text=True)
+        expected_output = f"No files found in directory '{dir_name}'.\nDirectory '{os.path.join(dir_name, 'subdir')}'" \
+                          f" is empty.\n"
+        self.assertEqual(result.stdout, expected_output)
+        shutil.rmtree(dir_name)
+
 
 if __name__ == '__main__':
+    remove_temp_files()
     unittest.main()
